@@ -1,17 +1,17 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { useState, useEffect, useContext } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useWallet } from '../contexts/WalletContext'
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation'
 
 export default function About() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [mounted, setMounted] = useState(false)
-  const [showConnectingAnimation, setShowConnectingAnimation] = useState(false);
-  const { connectWallet, address, connecting } = useWallet();
-  const router = useRouter();
+  const [showConnectingAnimation, setShowConnectingAnimation] = useState(false)
+  const { connectWallet, address, connecting } = useWallet()
+  const router = useRouter()
   
   // Fixed positions for particles
   const particlePositions = [
@@ -38,56 +38,26 @@ export default function About() {
     return () => window.removeEventListener('mousemove', handleMouseMove)
   }, [])
 
-  const features = [
-    {
-      icon: "🔒",
-      title: "Privacy First",
-      description: "Your conversations remain private with end-to-end encryption and optional ephemeral messaging."
-    },
-    {
-      icon: "⚡",
-      title: "Lightning Fast",
-      description: "Real-time messaging with ultra-low latency for seamless communication experiences."
-    },
-    {
-      icon: "🎨",
-      title: "Customizable",
-      description: "Personalize your experience with themes, layouts, and notification preferences."
-    },
-    {
-      icon: "🌐",
-      title: "Cross-Platform",
-      description: "Access Oblivion from any device - desktop, mobile, or web - with perfect synchronization."
-    }
-  ]
-
-  const stats = [
-    { number: "10M+", label: "Active Users" },
-    { number: "99.9%", label: "Uptime" },
-    { number: "256-bit", label: "Encryption" },
-    { number: "24/7", label: "Support" }
-  ]
-
-  // Handle wallet connection with animation (same as landing page)
+  // Handle wallet connection with animation
   const handleWalletConnect = async () => {
-    await connectWallet();
+    await connectWallet()
     if (address) {
-      setShowConnectingAnimation(true);
+      setShowConnectingAnimation(true)
       setTimeout(() => {
-        router.push('/home');
-      }, 2000);
+        router.push('/home')
+      }, 2000)
     }
-  };
+  }
 
   // Watch for address changes to trigger animation
   useEffect(() => {
     if (address && !showConnectingAnimation) {
-      setShowConnectingAnimation(true);
+      setShowConnectingAnimation(true)
       setTimeout(() => {
-        router.push('/home');
-      }, 2000);
+        router.push('/home')
+      }, 2000)
     }
-  }, [address]);
+  }, [address, showConnectingAnimation, router])
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative">
@@ -124,6 +94,7 @@ export default function About() {
           </div>
         </motion.div>
       )}
+
       {/* Dynamic Mouse-Following Gradient */}
       <motion.div
         className="fixed inset-0 opacity-30 pointer-events-none z-0"
@@ -285,7 +256,7 @@ export default function About() {
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.2 }}
             >
-              Oblivion: Hybrid, Censorship-Resistant Social Media
+              The Future of Social Media
             </motion.h1>
             <motion.p 
               className="text-xl sm:text-2xl text-white/70 leading-relaxed max-w-4xl mx-auto"
@@ -293,92 +264,159 @@ export default function About() {
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.4 }}
             >
-              Oblivion is a next-generation social media platform that merges Web2 and Web3 technologies, offering true censorship resistance and user control. Enjoy a familiar social experience or make your posts permanent on the Stellar blockchain—the choice is yours.
+              Experience the next evolution of social networking with hybrid Web2/Web3 technology, 
+              O.B.I. business intelligence, and community-driven campaigns.
             </motion.p>
           </motion.div>
 
-          {/* Features Section */}
+          {/* Core Features */}
+          <motion.div 
+            className="grid md:grid-cols-3 gap-8 mb-16"
+            initial={{ y: 50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+          >
+            <motion.div
+              className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 hover:bg-white/15 transition-all duration-300"
+              whileHover={{ scale: 1.02, y: -5 }}
+              initial={{ x: -50, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.8 }}
+            >
+              <div className="text-4xl mb-4">🚀</div>
+              <h3 className="text-2xl font-bold text-white mb-4">Hybrid Social Network</h3>
+              <p className="text-white/70 leading-relaxed">
+                Choose between traditional Web2 posting or permanent Web3 blockchain storage. 
+                Your content, your choice - temporary or forever.
+              </p>
+            </motion.div>
+
+            <motion.div
+              className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 hover:bg-white/15 transition-all duration-300"
+              whileHover={{ scale: 1.02, y: -5 }}
+              initial={{ y: 50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.8, delay: 1.0 }}
+            >
+              <div className="text-4xl mb-4">�</div>
+              <h3 className="text-2xl font-bold text-white mb-4">O.B.I. Platform</h3>
+              <p className="text-white/70 leading-relaxed">
+                Oblivion Business Intelligence - Create ventures, manage repositories, 
+                build learning paths, and monetize your knowledge with our comprehensive platform.
+              </p>
+            </motion.div>
+
+            <motion.div
+              className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 hover:bg-white/15 transition-all duration-300"
+              whileHover={{ scale: 1.02, y: -5 }}
+              initial={{ x: 50, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.8, delay: 1.2 }}
+            >
+              <div className="text-4xl mb-4">🎯</div>
+              <h3 className="text-2xl font-bold text-white mb-4">Community Campaigns</h3>
+              <p className="text-white/70 leading-relaxed">
+                Launch fundraising campaigns, build communities around causes, 
+                and create real-world impact through decentralized coordination.
+              </p>
+            </motion.div>
+          </motion.div>
+
+          {/* Detailed Features */}
           <motion.div 
             className="grid md:grid-cols-2 gap-8 mb-16"
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.8, delay: 1 }}
+            transition={{ duration: 0.8, delay: 1.4 }}
           >
             <motion.div
-              className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 hover:bg-white/15 transition-all duration-500"
-              whileHover={{ scale: 1.02, y: -5 }}
-              initial={{ x: -50, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ duration: 0.8, delay: 1.2 }}
+              className="bg-white/5 backdrop-blur-xl rounded-2xl p-6 border border-white/10"
+              whileHover={{ scale: 1.01 }}
             >
-              <div className="text-4xl mb-4">🌐</div>
-              <h3 className="text-2xl font-bold text-white mb-4">Hybrid Model</h3>
-              <p className="text-white/70 leading-relaxed">Oblivion lets you post in the traditional (Web2) way or make your content permanent and censorship-resistant on the Stellar blockchain. Choose flexibility or permanence for every post.</p>
+              <h4 className="text-xl font-semibold text-white mb-4 flex items-center">
+                <span className="mr-3">🌐</span>
+                Decentralized & Censorship-Resistant
+              </h4>
+              <p className="text-white/70 text-sm leading-relaxed">
+                Posts stored on the Stellar blockchain become permanent and immutable. 
+                No authority can remove or censor your ideas once they&apos;re on-chain.
+              </p>
             </motion.div>
+
             <motion.div
-              className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 hover:bg-white/15 transition-all duration-500"
-              whileHover={{ scale: 1.02, y: -5 }}
-              initial={{ x: 50, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ duration: 0.8, delay: 1.4 }}
+              className="bg-white/5 backdrop-blur-xl rounded-2xl p-6 border border-white/10"
+              whileHover={{ scale: 1.01 }}
             >
-              <div className="text-4xl mb-4">🛡️</div>
-              <h3 className="text-2xl font-bold text-white mb-4">Censorship Resistance</h3>
-              <p className="text-white/70 leading-relaxed">Posts on the blockchain are permanent and cannot be removed by any authority. Your ideas and voice are protected—forever.</p>
+              <h4 className="text-xl font-semibold text-white mb-4 flex items-center">
+                <span className="mr-3">📚</span>
+                Educational Ventures
+              </h4>
+              <p className="text-white/70 text-sm leading-relaxed">
+                Create educational content, organize it into learning paths, 
+                and monetize your expertise through our venture system.
+              </p>
             </motion.div>
+
             <motion.div
-              className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 hover:bg-white/15 transition-all duration-500"
-              whileHover={{ scale: 1.02, y: -5 }}
-              initial={{ x: -50, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ duration: 0.8, delay: 1.6 }}
+              className="bg-white/5 backdrop-blur-xl rounded-2xl p-6 border border-white/10"
+              whileHover={{ scale: 1.01 }}
             >
-              <div className="text-4xl mb-4">🚀</div>
-              <h3 className="text-2xl font-bold text-white mb-4">Campaigns & Communities</h3>
-              <p className="text-white/70 leading-relaxed">Oblivion is more than just posting—start campaigns, build communities, and gather support. Social media is now about collective action and real impact.</p>
+              <h4 className="text-xl font-semibold text-white mb-4 flex items-center">
+                <span className="mr-3">💰</span>
+                Monetization & Crowdfunding
+              </h4>
+              <p className="text-white/70 text-sm leading-relaxed">
+                Launch campaigns to fund projects, sell educational content, 
+                and build sustainable revenue streams in the creator economy.
+              </p>
             </motion.div>
+
             <motion.div
-              className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 hover:bg-white/15 transition-all duration-500"
-              whileHover={{ scale: 1.02, y: -5 }}
-              initial={{ x: 50, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ duration: 0.8, delay: 1.8 }}
+              className="bg-white/5 backdrop-blur-xl rounded-2xl p-6 border border-white/10"
+              whileHover={{ scale: 1.01 }}
             >
-              <div className="text-4xl mb-4">💡</div>
-              <h3 className="text-2xl font-bold text-white mb-4">Vision for the Future</h3>
-              <p className="text-white/70 leading-relaxed">Coming soon: DMs, Telegram-style channels, subscriptions, and new revenue models for creators. Build your own community, share freely, and get rewarded.</p>
+              <h4 className="text-xl font-semibold text-white mb-4 flex items-center">
+                <span className="mr-3">🔗</span>
+                Stellar Network Integration
+              </h4>
+              <p className="text-white/70 text-sm leading-relaxed">
+                Built on Stellar for fast, low-cost transactions and seamless 
+                integration with the broader cryptocurrency ecosystem.
+              </p>
             </motion.div>
           </motion.div>
 
-          {/* Mission Section */}
+          {/* Mission Statement */}
           <motion.div 
-            className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 sm:p-12 border border-white/20 text-center"
+            className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 sm:p-12 border border-white/20 text-center mb-16"
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.8, delay: 2.2 }}
+            transition={{ duration: 0.8, delay: 1.8 }}
             whileHover={{ scale: 1.01 }}
           >
             <motion.h2 
               className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent mb-6"
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.6, delay: 2.4 }}
+              transition={{ duration: 0.6, delay: 2.0 }}
             >
-              Our Mission
+              Our Vision
             </motion.h2>
             <motion.p 
               className="text-lg sm:text-xl text-white/70 leading-relaxed max-w-4xl mx-auto mb-8"
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.6, delay: 2.6 }}
+              transition={{ duration: 0.6, delay: 2.2 }}
             >
-              We are here to defend freedom of expression and uncensored communication in the digital world. Oblivion introduces a new era in social media with a hybrid model that gives users both flexibility and permanence. The fate of your posts is in your hands: temporary or forever.
+              Oblivion bridges the gap between traditional social media and the decentralized web. 
+              We empower creators, educators, and communities to build, share, and monetize their 
+              content while maintaining full control over their digital presence.
             </motion.p>
             <motion.div
-              className="flex flex-col sm:flex-row gap-4 justify-center"
+              className="flex justify-center"
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.6, delay: 2.8 }}
+              transition={{ duration: 0.6, delay: 2.4 }}
             >
               <Link href="/">
                 <motion.button 
@@ -386,7 +424,7 @@ export default function About() {
                   whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  Get Started
+                  Start Your Journey
                 </motion.button>
               </Link>
             </motion.div>
