@@ -1,0 +1,375 @@
+import * as SignalProtocol from '@signalapp/libsignal-client';
+import { db } from "../../../firebase";
+import {
+  collection,
+  doc,
+  setDoc,
+  getDoc,
+  addDoc,
+  query,
+  where,
+  orderBy,
+  onSnapshot,
+  serverTimestamp,
+  getDocs,
+  updateDoc,
+  limit,
+  deleteDoc
+} from "@firebase/firestore";
+
+export interface MessageData {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  receiverId: string;
+  encryptedContent: string;
+  timestamp: any;
+  messageType: 'text' | 'image' | 'file';
+  isRead: boolean;
+  senderName?: string;
+  senderAvatar?: string;
+}
+
+export interface ConversationData {
+  id: string;
+  participants: string[];
+  participantNames: { [key: string]: string };
+  participantAvatars: { [key: string]: string };
+  lastMessage?: string;
+  lastMessageTime?: any;
+  lastMessageSender?: string;
+  unreadCount: { [userId: string]: number };
+  createdAt: any;
+  updatedAt: any;
+}
+
+export interface KeyBundle {
+  identityKey: Uint8Array;
+  signedPreKey: {
+    keyId: number;
+    publicKey: Uint8Array;
+    signature: Uint8Array;
+  };
+  preKey?: {
+    keyId: number;
+    publicKey: Uint8Array;
+  };
+}
+
+export interface UserKeys {
+  identityKeyPair: string; // base64 encoded
+  signedPreKeyPair: string; // base64 encoded
+  signedPreKeyId: number;
+  signedPreKeySignature: string; // base64 encoded
+  preKeys: Array<{
+    keyId: number;
+    keyPair: string; // base64 encoded
+  }>;
+  registrationId: number;
+}
+
+class SignalService {
+  private identityKeyPair: SignalProtocol.IdentityKeyPair | null = null;
+  private registrationId: number = 0;
+  private signedPreKeyPair: SignalProtocol.PrivateKey | null = null;
+  private signedPreKeyId: number = 0;
+  private preKeys: Map<number, SignalProtocol.PrivateKey> = new Map();
+
+  async initializeForUser(userId: string): Promise<boolean> {
+    try {
+      // Check if user already has keys
+      const userDoc = await getDoc(doc(db, "userKeys", userId));
+      
+      if (userDoc.exists()) {
+        // Load existing keys
+        const data = userDoc.data() as UserKeys;
+        this.identityKeyPair = SignalProtocol.IdentityKeyPair.deserialize(
+          Buffer.from(data.identityKeyPair, 'base64')
+        );
+        this.registrationId = data.registrationId;
+        this.signedPreKeyPair = SignalProtocol.PrivateKey.deserialize(
+          Buffer.from(data.signedPreKeyPair, 'base64')
+        );
+        this.signedPreKeyId = data.signedPreKeyId;
+        
+        // Load pre-keys
+        data.preKeys.forEach(preKey => {
+          this.preKeys.set(
+            preKey.keyId,
+            SignalProtocol.PrivateKey.deserialize(Buffer.from(preKey.keyPair, 'base64'))
+          );
+        });
+        
+        return true;
+      } else {
+        // Generate new keys
+        await this.generateKeys(userId);
+        return true;
+      }
+    } catch (error) {
+      console.error('Error initializing Signal for user:', error);
+      return false;
+    }
+  }
+
+  private async generateKeys(userId: string): Promise<void> {
+    // Generate identity key pair
+    this.identityKeyPair = SignalProtocol.IdentityKeyPair.generate();
+    this.registrationId = Math.floor(Math.random() * 16380) + 1;
+    
+    // Generate signed pre-key
+    this.signedPreKeyId = 1;
+    this.signedPreKeyPair = SignalProtocol.PrivateKey.generate();
+    const signedPreKeyPublic = this.signedPreKeyPair.publicKey();
+    const signedPreKeySignature = this.identityKeyPair.privateKey().sign(
+      signedPreKeyPublic.serialize()
+    );
+
+    // Generate one-time pre-keys
+    const preKeys: Array<{ keyId: number; keyPair: string }> = [];
+    for (let i = 1; i <= 10; i++) {
+      const preKeyPair = SignalProtocol.PrivateKey.generate();
+      this.preKeys.set(i, preKeyPair);
+      preKeys.push({
+        keyId: i,
+        keyPair: Buffer.from(preKeyPair.serialize()).toString('base64')
+      });
+    }
+
+    // Save keys to Firestore
+    const userKeys: UserKeys = {
+      identityKeyPair: Buffer.from(this.identityKeyPair.serialize()).toString('base64'),
+      signedPreKeyPair: Buffer.from(this.signedPreKeyPair.serialize()).toString('base64'),
+      signedPreKeyId: this.signedPreKeyId,
+      signedPreKeySignature: Buffer.from(signedPreKeySignature).toString('base64'),
+      preKeys,
+      registrationId: this.registrationId
+    };
+
+    await setDoc(doc(db, "userKeys", userId), userKeys);
+
+    // Also save public key bundle for other users to fetch
+    const keyBundle: KeyBundle = {
+      identityKey: this.identityKeyPair.publicKey().serialize(),
+      signedPreKey: {
+        keyId: this.signedPreKeyId,
+        publicKey: signedPreKeyPublic.serialize(),
+        signature: signedPreKeySignature
+      },
+      preKey: preKeys.length > 0 ? {
+        keyId: preKeys[0].keyId,
+        publicKey: this.preKeys.get(preKeys[0].keyId)!.publicKey().serialize()
+      } : undefined
+    };
+
+    await setDoc(doc(db, "publicKeys", userId), {
+      ...keyBundle,
+      identityKey: Buffer.from(keyBundle.identityKey).toString('base64'),
+      signedPreKey: {
+        ...keyBundle.signedPreKey,
+        publicKey: Buffer.from(keyBundle.signedPreKey.publicKey).toString('base64'),
+        signature: Buffer.from(keyBundle.signedPreKey.signature).toString('base64')
+      },
+      preKey: keyBundle.preKey ? {
+        ...keyBundle.preKey,
+        publicKey: Buffer.from(keyBundle.preKey.publicKey).toString('base64')
+      } : undefined,
+      registrationId: this.registrationId
+    });
+  }
+
+  async getKeyBundle(userId: string): Promise<KeyBundle | null> {
+    try {
+      const keyDoc = await getDoc(doc(db, "publicKeys", userId));
+      if (!keyDoc.exists()) {
+        return null;
+      }
+      
+      const data = keyDoc.data();
+      return {
+        identityKey: Buffer.from(data.identityKey, 'base64'),
+        signedPreKey: {
+          keyId: data.signedPreKey.keyId,
+          publicKey: Buffer.from(data.signedPreKey.publicKey, 'base64'),
+          signature: Buffer.from(data.signedPreKey.signature, 'base64')
+        },
+        preKey: data.preKey ? {
+          keyId: data.preKey.keyId,
+          publicKey: Buffer.from(data.preKey.publicKey, 'base64')
+        } : undefined
+      };
+    } catch (error) {
+      console.error('Error getting key bundle:', error);
+      return null;
+    }
+  }
+
+  async encryptMessage(message: string, recipientId: string): Promise<string | null> {
+    try {
+      if (!this.identityKeyPair) {
+        throw new Error('Signal not initialized');
+      }
+
+      // Get recipient's key bundle
+      const recipientBundle = await this.getKeyBundle(recipientId);
+      if (!recipientBundle) {
+        throw new Error('Recipient key bundle not found');
+      }
+
+      // Create session
+      const recipientAddress = SignalProtocol.ProtocolAddress.new(recipientId, 1);
+      const sessionBuilder = SignalProtocol.SessionBuilder.new(
+        this.createSessionStore(),
+        this.createPreKeyStore(),
+        this.createSignedPreKeyStore(),
+        this.createIdentityKeyStore(),
+        recipientAddress
+      );
+
+      // Build session with recipient's key bundle
+      const preKeyBundle = SignalProtocol.PreKeyBundle.new(
+        recipientBundle.signedPreKey.keyId,
+        1, // device ID
+        recipientBundle.preKey?.keyId || 0,
+        recipientBundle.preKey ? SignalProtocol.PublicKey.deserialize(recipientBundle.preKey.publicKey) : null,
+        recipientBundle.signedPreKey.keyId,
+        SignalProtocol.PublicKey.deserialize(recipientBundle.signedPreKey.publicKey),
+        recipientBundle.signedPreKey.signature,
+        SignalProtocol.PublicKey.deserialize(recipientBundle.identityKey)
+      );
+
+      await sessionBuilder.processPreKeyBundle(preKeyBundle);
+
+      // Encrypt message
+      const sessionCipher = SignalProtocol.SessionCipher.new(
+        this.createSessionStore(),
+        this.createPreKeyStore(),
+        this.createSignedPreKeyStore(),
+        this.createIdentityKeyStore(),
+        recipientAddress
+      );
+
+      const ciphertext = await sessionCipher.encrypt(Buffer.from(message, 'utf8'));
+      return Buffer.from(ciphertext.serialize()).toString('base64');
+    } catch (error) {
+      console.error('Error encrypting message:', error);
+      return null;
+    }
+  }
+
+  async decryptMessage(encryptedMessage: string, senderId: string): Promise<string | null> {
+    try {
+      if (!this.identityKeyPair) {
+        throw new Error('Signal not initialized');
+      }
+
+      const senderAddress = SignalProtocol.ProtocolAddress.new(senderId, 1);
+      const sessionCipher = SignalProtocol.SessionCipher.new(
+        this.createSessionStore(),
+        this.createPreKeyStore(),
+        this.createSignedPreKeyStore(),
+        this.createIdentityKeyStore(),
+        senderAddress
+      );
+
+      const ciphertext = SignalProtocol.PreKeySignalMessage.deserialize(
+        Buffer.from(encryptedMessage, 'base64')
+      );
+
+      const decrypted = await sessionCipher.decryptPreKeySignalMessage(ciphertext);
+      return Buffer.from(decrypted).toString('utf8');
+    } catch (error) {
+      console.error('Error decrypting message:', error);
+      return null;
+    }
+  }
+
+  private createSessionStore(): SignalProtocol.SessionStore {
+    // Simplified session store - in production, this should persist sessions
+    const sessions = new Map<string, Uint8Array>();
+    
+    return {
+      saveSession: async (address: SignalProtocol.ProtocolAddress, record: SignalProtocol.SessionRecord) => {
+        sessions.set(address.name() + ':' + address.deviceId(), record.serialize());
+      },
+      getSession: async (address: SignalProtocol.ProtocolAddress) => {
+        const key = address.name() + ':' + address.deviceId();
+        const sessionData = sessions.get(key);
+        return sessionData ? SignalProtocol.SessionRecord.deserialize(sessionData) : null;
+      },
+      getExistingSessions: async (addresses: SignalProtocol.ProtocolAddress[]) => {
+        return addresses.filter(addr => {
+          const key = addr.name() + ':' + addr.deviceId();
+          return sessions.has(key);
+        });
+      }
+    };
+  }
+
+  private createPreKeyStore(): SignalProtocol.PreKeyStore {
+    return {
+      savePreKey: async (preKeyId: number, record: SignalProtocol.PreKeyRecord) => {
+        // Save pre-key to memory/storage
+      },
+      getPreKey: async (preKeyId: number) => {
+        const preKey = this.preKeys.get(preKeyId);
+        if (preKey) {
+          return SignalProtocol.PreKeyRecord.new(preKeyId, preKey);
+        }
+        return null;
+      },
+      removePreKey: async (preKeyId: number) => {
+        this.preKeys.delete(preKeyId);
+      }
+    };
+  }
+
+  private createSignedPreKeyStore(): SignalProtocol.SignedPreKeyStore {
+    return {
+      saveSignedPreKey: async (signedPreKeyId: number, record: SignalProtocol.SignedPreKeyRecord) => {
+        // Save signed pre-key to memory/storage
+      },
+      getSignedPreKey: async (signedPreKeyId: number) => {
+        if (signedPreKeyId === this.signedPreKeyId && this.signedPreKeyPair && this.identityKeyPair) {
+          const signedPreKeyPublic = this.signedPreKeyPair.publicKey();
+          const signature = this.identityKeyPair.privateKey().sign(signedPreKeyPublic.serialize());
+          return SignalProtocol.SignedPreKeyRecord.new(
+            signedPreKeyId,
+            Date.now(),
+            this.signedPreKeyPair,
+            signedPreKeyPublic,
+            signature
+          );
+        }
+        return null;
+      }
+    };
+  }
+
+  private createIdentityKeyStore(): SignalProtocol.IdentityKeyStore {
+    return {
+      getIdentityKeyPair: async () => {
+        return this.identityKeyPair;
+      },
+      getLocalRegistrationId: async () => {
+        return this.registrationId;
+      },
+      saveIdentity: async (address: SignalProtocol.ProtocolAddress, identityKey: SignalProtocol.PublicKey) => {
+        // Save identity key for address
+        return true;
+      },
+      isTrustedIdentity: async (address: SignalProtocol.ProtocolAddress, identityKey: SignalProtocol.PublicKey, direction: number) => {
+        // Always trust for simplicity - in production, implement proper identity verification
+        return true;
+      },
+      getIdentity: async (address: SignalProtocol.ProtocolAddress) => {
+        // Return stored identity key for address
+        return null;
+      }
+    };
+  }
+}
+
+// Create a singleton instance
+const signalService = new SignalService();
+export default signalService;
