@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { StrKey } from '@stellar/stellar-sdk';
 import Sidebar from '../components/sidebar';
 import DonateModal from '../components/DonateModal';
 import CreateCampaignModal from '../components/CreateCampaignModal';
@@ -52,74 +53,246 @@ export default function CampaignsPage() {// Use wallet context
   const parseContractResponse = (response: any): any => {
     if (!response) return null;
     
-    // Handle Option type (Some/None)
-    if (response._arm === 'some' && response._value) {
-      return parseContractResponse(response._value);
-    } else if (response._arm === 'none') {
+    try {
+      // If it's already in the correct format
+      if (response.creator && response.title) {
+        return response;
+      }
+
+      // Handle Option type (Some/None)
+      if (response._arm === 'some' && response._value) {
+        return parseContractResponse(response._value);
+      } else if (response._arm === 'none') {
+        return null;
+      }
+      
+      // Handle Map type
+      if (response._arm === 'map' && response._value && Array.isArray(response._value)) {
+        return parseMapResponse(response._value);
+      }
+
+      // Handle Instance type with nested values
+      if (response._arm === 'instance' && response._value && Array.isArray(response._value)) {
+        return parseMapResponse(response._value);
+      }
+
+      // Handle direct array (map entries)
+      if (Array.isArray(response)) {
+        return parseMapResponse(response);
+      }
+      
+      // Handle nested structures
+      if (response._value && typeof response._value === 'object') {
+        return parseContractResponse(response._value);
+      }
+
+      // If it has map-like structure, try to parse it
+      if (typeof response === 'object') {
+        const keys = Object.keys(response);
+        if (keys.length > 0) {
+          // Check if it looks like campaign data
+          const hasValidFields = keys.some(key => 
+            ['creator', 'title', 'description', 'image_url', 'created_at', 'total_donated', 'is_active'].includes(key)
+          );
+          if (hasValidFields) {
+            return response;
+          }
+        }
+      }
+      
+      return response;
+    } catch (error) {
+      console.error('Error in parseContractResponse:', error);
       return null;
     }
+  };
+
+  // Contract health check
+  const checkContractHealth = async () => {
+    if (!contract) return false;
     
-    // Handle direct Map format (when _arm is "map")
-    if (response._arm === 'map' && response._value && Array.isArray(response._value)) {
-      return parseMapResponse(response._value);
+    try {
+      // Simple test call to verify contract is working
+      const countResult = await contract.get_campaign_count();
+      return countResult && countResult.result !== undefined;
+    } catch (error) {
+      console.error('Contract health check failed:', error);
+      return false;
     }
-    
-    // Handle direct objects that might have been properly parsed already
-    if (response.creator !== undefined && response.title !== undefined) {
-      return response;
-    }
-    
-    return response;
   };
 
   const parseMapResponse = (mapArray: any[]): any => {
     const result: any = {};
     
-    for (const item of mapArray) {
-      if (item._attributes && item._attributes.key && item._attributes.val) {
-        const key = item._attributes.key;
-        const val = item._attributes.val;
+    console.log('[parseMapResponse] Input mapArray:', JSON.stringify(mapArray, null, 2));
+    
+    try {
+      if (!Array.isArray(mapArray)) {
+        console.warn('parseMapResponse: Input is not an array');
+        return result;
+      }
+
+      for (let i = 0; i < mapArray.length; i++) {
+        const item = mapArray[i];
+        console.log(`[parseMapResponse] Processing item ${i}:`, JSON.stringify(item, null, 2));
         
-        // Extract key name
-        let keyName = '';
-        if (key._value && typeof key._value === 'string') {
-          keyName = key._value;
-        } else if (key._value && key._value.data) {
-          keyName = Buffer.from(key._value.data).toString('utf8');
+        if (!item || !item._attributes) {
+          console.warn(`parseMapResponse: Invalid item structure at index ${i}:`, item);
+          continue;
         }
+
+        const { key, val } = item._attributes;
         
+        if (!key || !val) {
+          console.warn(`parseMapResponse: Missing key or val in item ${i}:`, item);
+          continue;
+        }
+
+        // Extract key name with comprehensive handling
+        let keyName = '';
+        try {
+          // Handle symbol keys with Buffer data
+          if (key._arm === 'sym' && key._value) {
+            if (key._value.type === 'Buffer' && Array.isArray(key._value.data)) {
+              keyName = Buffer.from(key._value.data).toString('utf8');
+              console.log(`[parseMapResponse] Extracted Buffer key: "${keyName}"`);
+            } else if (key._value instanceof Uint8Array) {
+              // Handle Uint8Array format
+              keyName = Buffer.from(key._value).toString('utf8');
+              console.log(`[parseMapResponse] Extracted Uint8Array key: "${keyName}"`);
+            } else if (typeof key._value === 'string') {
+              keyName = key._value;
+              console.log(`[parseMapResponse] Extracted string key: "${keyName}"`);
+            } else {
+              console.warn(`[parseMapResponse] Unhandled sym key format:`, key._value);
+              continue;
+            }
+          } else {
+            console.warn(`[parseMapResponse] Unhandled key format:`, key);
+            continue;
+          }
+        } catch (keyError) {
+          console.error(`[parseMapResponse] Error extracting key from item ${i}:`, keyError);
+          continue;
+        }
+
         // Extract value based on type
         let value = null;
-        if (val._arm === 'str') {
-          if (val._value && typeof val._value === 'string') {
-            value = val._value;
-          } else if (val._value && val._value.data) {
-            value = Buffer.from(val._value.data).toString('utf8');
-          }
-        } else if (val._arm === 'u64' || val._arm === 'i128') {
-          if (val._value && val._value._value) {
-            value = BigInt(val._value._value);
-          } else if (typeof val._value === 'string' || typeof val._value === 'number') {
-            value = BigInt(val._value);
-          }
-        } else if (val._arm === 'address') {
-          try {
-            if (val._value && typeof val._value === 'string') {
+        try {
+          if (val._arm === 'str') {
+            if (val._value && val._value.type === 'Buffer' && Array.isArray(val._value.data)) {
+              value = Buffer.from(val._value.data).toString('utf8');
+              console.log(`[parseMapResponse] Extracted Buffer string value: "${value}"`);
+            } else if (val._value instanceof Uint8Array) {
+              // Handle Uint8Array format
+              value = Buffer.from(val._value).toString('utf8');
+              console.log(`[parseMapResponse] Extracted Uint8Array string value: "${value}"`);
+            } else if (typeof val._value === 'string') {
               value = val._value;
+              console.log(`[parseMapResponse] Extracted direct string value: "${value}"`);
+            } else {
+              console.warn(`[parseMapResponse] Unhandled str value format:`, val._value);
             }
-          } catch (error) {
-            console.error('Error parsing address:', error);
-            value = 'Invalid Address';
+          } else if (val._arm === 'u64') {
+            // Handle u64 values - they can be nested or direct
+            if (val._value) {
+              if (val._value._value !== undefined) {
+                value = BigInt(val._value._value);
+                console.log(`[parseMapResponse] Extracted nested u64 value: ${value}`);
+              } else if (typeof val._value === 'string' || typeof val._value === 'number') {
+                value = BigInt(val._value);
+                console.log(`[parseMapResponse] Extracted direct u64 value: ${value}`);
+              } else {
+                console.warn(`[parseMapResponse] Unhandled u64 value format:`, val._value);
+              }
+            }
+          } else if (val._arm === 'i128') {
+            // Handle i128 values with hi/lo components
+            if (val._value && val._value._attributes) {
+              const hi = val._value._attributes.hi?._value || '0';
+              const lo = val._value._attributes.lo?._value || '0';
+              if (hi === '0') {
+                value = BigInt(lo);
+              } else {
+                value = (BigInt(hi) << BigInt(64)) + BigInt(lo);
+              }
+              console.log(`[parseMapResponse] Extracted i128 value: ${value}`);
+            } else if (val._value && typeof val._value === 'string') {
+              value = BigInt(val._value);
+              console.log(`[parseMapResponse] Extracted direct i128 value: ${value}`);
+            } else {
+              console.warn(`[parseMapResponse] Unhandled i128 value format:`, val._value);
+            }
+          } else if (val._arm === 'b' || val._arm === 'bool') {
+            if (val._value !== null && val._value !== undefined) {
+              value = Boolean(val._value);
+              console.log(`[parseMapResponse] Extracted boolean value: ${value}`);
+            } else {
+              console.warn(`[parseMapResponse] Null/undefined boolean value:`, val._value);
+            }
+          } else if (val._arm === 'address') {
+            try {
+              if (val._value && val._value._arm === 'accountId' && val._value._value) {
+                const addressAccount = val._value._value;
+                if (addressAccount._value && addressAccount._value.type === 'Buffer' && Array.isArray(addressAccount._value.data)) {
+                  try {
+                    const addressBytes = Buffer.from(addressAccount._value.data);
+                    value = StrKey.encodeEd25519PublicKey(addressBytes);
+                    console.log(`[parseMapResponse] Extracted address value: ${value}`);
+                  } catch (strKeyError) {
+                    console.error('Error converting address with StrKey:', strKeyError);
+                    const addressHex = addressAccount._value.data.map((b: number) => b.toString(16).padStart(2, '0')).join('');
+                    value = `Address_${addressHex.substring(0, 16)}...`;
+                    console.log(`[parseMapResponse] Extracted fallback address: ${value}`);
+                  }
+                } else if (addressAccount._value instanceof Uint8Array) {
+                  // Handle Uint8Array format
+                  try {
+                    const addressBytes = Buffer.from(addressAccount._value);
+                    value = StrKey.encodeEd25519PublicKey(addressBytes);
+                    console.log(`[parseMapResponse] Extracted Uint8Array address value: ${value}`);
+                  } catch (strKeyError) {
+                    console.error('Error converting Uint8Array address with StrKey:', strKeyError);
+                    const addressHex = Array.from(addressAccount._value).map((b: any) => (b as number).toString(16).padStart(2, '0')).join('');
+                    value = `Address_${addressHex.substring(0, 16)}...`;
+                    console.log(`[parseMapResponse] Extracted fallback Uint8Array address: ${value}`);
+                  }
+                } else if (typeof addressAccount === 'string') {
+                  value = addressAccount;
+                  console.log(`[parseMapResponse] Extracted string address: ${value}`);
+                } else {
+                  console.warn(`[parseMapResponse] Unhandled address format:`, addressAccount);
+                }
+              } else {
+                console.warn(`[parseMapResponse] Unhandled address value format:`, val._value);
+              }
+            } catch (error) {
+              console.error(`[parseMapResponse] Error parsing address:`, error);
+            }
+          } else {
+            console.warn(`[parseMapResponse] Unhandled value type "${val._arm}":`, val);
           }
-        }
-        
-        if (keyName && value !== null) {
-          result[keyName] = value;
+
+          if (keyName && value !== null && value !== undefined) {
+            result[keyName] = value;
+            console.log(`[parseMapResponse] ✅ Successfully added: ${keyName} = ${value}`);
+          } else if (keyName) {
+            console.warn(`[parseMapResponse] ❌ Failed to extract value for key "${keyName}" - value:`, value);
+          }
+        } catch (valueError) {
+          console.error(`[parseMapResponse] Error extracting value for key "${keyName}":`, valueError);
+          continue;
         }
       }
+    } catch (error) {
+      console.error('[parseMapResponse] Fatal error:', error);
     }
     
-    return result;  };
+    console.log('[parseMapResponse] Final result:', result);
+    console.log('[parseMapResponse] Result keys:', Object.keys(result));
+    return result;
+  };
+
   const loadCreatorUsername = async (walletAddress: string) => {
     if (!walletAddress || creatorUsernames[walletAddress]) return;
     
@@ -229,8 +402,18 @@ export default function CampaignsPage() {// Use wallet context
     
     setLoading(prev => ({ ...prev, loadCampaigns: true }));
     try {
-      const countResult = await contract.get_campaign_count();      const count = Number(countResult.result);
-      setCampaignCount(count);
+      // Get campaign count with better error handling
+      let count = 0;
+      try {
+        const countResult = await contract.get_campaign_count();
+        count = Number(countResult.result || 0);
+        console.log('Campaign count:', count);
+        setCampaignCount(count);
+      } catch (countError) {
+        console.error('Error getting campaign count:', countError);
+        toast.error('Failed to load campaign count');
+        return;
+      }
 
       if (count === 0) {
         setCampaigns([]);
@@ -239,60 +422,160 @@ export default function CampaignsPage() {// Use wallet context
 
       let campaignsArray: Campaign[] = [];
 
-      // Try get_all_campaigns first
+      // Try to get all campaigns at once first (more efficient)
       try {
+        console.log('Attempting to load all campaigns using get_all_campaigns...');
         const allCampaignsResult = await contract.get_all_campaigns();
+        
         if (allCampaignsResult.result && Array.isArray(allCampaignsResult.result)) {
-          for (const campaignData of allCampaignsResult.result) {
+          console.log('get_all_campaigns successful, processing campaigns...', allCampaignsResult.result.length, 'campaigns found');
+          
+          for (let i = 0; i < allCampaignsResult.result.length; i++) {
+            const campaignData = allCampaignsResult.result[i];
             let campaign: Campaign | null = null;
+            
+            console.log(`Processing campaign ${i + 1}:`, JSON.stringify(campaignData, null, 2));
+            
             if (typeof campaignData === 'object' && campaignData !== null) {
+              // Check if it's already in the correct format
               if ('creator' in campaignData && 'title' in campaignData) {
-                campaign = campaignData as Campaign;              } else {
+                campaign = campaignData as Campaign;
+                console.log(`Campaign ${i + 1} - Direct format detected`);
+              } else {
+                // Try to parse the campaign data using our robust parsing function
                 try {
                   const parsedData = parseContractResponse(campaignData);
                   if (parsedData && parsedData.creator && parsedData.title) {
                     campaign = {
-                      id: parsedData.id || BigInt(0),
+                      id: parsedData.id ? BigInt(parsedData.id) : BigInt(i + 1),
                       creator: parsedData.creator,
                       title: parsedData.title,
                       description: parsedData.description || '',
                       image_url: parsedData.image_url || '',
-                      created_at: parsedData.created_at || BigInt(0),
+                      created_at: parsedData.created_at ? BigInt(parsedData.created_at) : BigInt(0),
                       total_donated: parsedData.total_donated || BigInt(0),
-                      is_active: parsedData.is_active || true
+                      is_active: parsedData.is_active !== undefined ? parsedData.is_active : true
                     };
-                  }                } catch (parseError) {
-                  console.error('Error parsing campaign:', parseError);                }
+                    console.log(`Campaign ${i + 1} - Successfully parsed from get_all_campaigns`);
+                  } else {
+                    console.warn(`Campaign ${i + 1} - Parse failed: creator=${parsedData?.creator}, title=${parsedData?.title}`);
+                  }
+                } catch (parseError) {
+                  console.error(`Campaign ${i + 1} - Error parsing:`, parseError);
+                }
               }
-            }            if (campaign) {
-              campaignsArray.push(campaign);
-              loadCampaignBalance(Number(campaign.id));
-              loadCampaignStatus(Number(campaign.id));
-              loadCreatorUsername(campaign.creator);
             }
-          }        }        setCampaigns(campaignsArray.reverse());
-        
-        // Load final amounts from Firebase after campaigns are loaded
-        await loadFinalAmountsFromFirebase(campaignsArray);
-        
-        // Load campaign likes
-        await loadCampaignLikes(campaignsArray);
+            
+            if (campaign) {
+              campaignsArray.push(campaign);
+            } else {
+              console.warn(`Campaign ${i + 1} could not be parsed properly from get_all_campaigns`);
+            }
+          }
+          
+          console.log(`Successfully loaded ${campaignsArray.length} campaigns using get_all_campaigns`);
+        } else {
+          throw new Error('get_all_campaigns returned empty or invalid result');
+        }
       } catch (getAllError) {
-        console.error('Error with get_all_campaigns:', getAllError);
+        console.error('Error with get_all_campaigns, falling back to individual fetch:', getAllError);
         
-        // Fallback: load campaigns one by one
-        campaignsArray = [];
+        // Fallback: Load campaigns one by one (previous implementation)
         for (let i = 1; i <= count; i++) {
           try {
-            const campaignResult = await contract.get_campaign({ campaign_id: BigInt(i) });
-            if (campaignResult.result) {
-              let campaign: Campaign | null = null;
+            let campaign: Campaign | null = null;
+            
+            // Try different approaches to get campaign data
+            try {
+              // Method 1: Try normal SDK call first
+              const campaignResult = await contract.get_campaign({ campaign_id: BigInt(i) });
               const campaignData = campaignResult.result;
-              if (typeof campaignData === 'object' && campaignData !== null) {
-                if ((campaignData as any)._arm === 'some' && (campaignData as any)._value) {
-                  const campaignValue = (campaignData as any)._value;
-                  try {
-                    const parsedData = parseContractResponse(campaignValue);
+              
+              console.log(`Campaign ${i} SDK call successful, data:`, JSON.stringify(campaignData, null, 2));
+              
+              if (campaignData && typeof campaignData === 'object') {
+                // Enhanced response format handling
+                try {
+                  // Check if it's already in the correct format
+                  if ('creator' in campaignData && 'title' in campaignData) {
+                    campaign = campaignData as Campaign;
+                    console.log(`Campaign ${i} - Direct format detected`);
+                  } 
+                  // Handle direct map format FIRST (this is the most common case now)
+                  else if ((campaignData as any)._arm === 'map' && (campaignData as any)._value && Array.isArray((campaignData as any)._value)) {
+                    console.log(`Campaign ${i} - Direct Map format detected`);
+                    const parsedData = parseMapResponse((campaignData as any)._value);
+                    if (parsedData && parsedData.creator && parsedData.title) {
+                      campaign = {
+                        id: parsedData.id ? BigInt(parsedData.id) : BigInt(i),
+                        creator: parsedData.creator,
+                        title: parsedData.title,
+                        description: parsedData.description || '',
+                        image_url: parsedData.image_url || '',
+                        created_at: parsedData.created_at ? BigInt(parsedData.created_at) : BigInt(0),
+                        total_donated: parsedData.total_donated || BigInt(0),
+                        is_active: parsedData.is_active !== undefined ? parsedData.is_active : true
+                      };
+                      console.log(`Campaign ${i} - Successfully parsed from direct map`);
+                    }
+                  }
+                  // Handle Option type (Some/None)
+                  else if ((campaignData as any)._arm === 'some' && (campaignData as any)._value) {
+                    console.log(`Campaign ${i} - Option(Some) format detected`);
+                    const campaignValue = (campaignData as any)._value;
+                    
+                    if (campaignValue.creator && campaignValue.title) {
+                      campaign = {
+                        id: campaignValue.id ? BigInt(campaignValue.id) : BigInt(i),
+                        creator: campaignValue.creator,
+                        title: campaignValue.title,
+                        description: campaignValue.description || '',
+                        image_url: campaignValue.image_url || '',
+                        created_at: campaignValue.created_at ? BigInt(campaignValue.created_at) : BigInt(0),
+                        total_donated: campaignValue.total_donated || BigInt(0),
+                        is_active: campaignValue.is_active !== undefined ? campaignValue.is_active : true
+                      };
+                    } else if (campaignValue._arm === 'map' && campaignValue._value && Array.isArray(campaignValue._value)) {
+                      console.log(`Campaign ${i} - Nested Map format detected`);
+                      const parsedData = parseMapResponse(campaignValue._value);
+                      if (parsedData && parsedData.creator && parsedData.title) {
+                        campaign = {
+                          id: parsedData.id ? BigInt(parsedData.id) : BigInt(i),
+                          creator: parsedData.creator,
+                          title: parsedData.title,
+                          description: parsedData.description || '',
+                          image_url: parsedData.image_url || '',
+                          created_at: parsedData.created_at ? BigInt(parsedData.created_at) : BigInt(0),
+                          total_donated: parsedData.total_donated || BigInt(0),
+                          is_active: parsedData.is_active !== undefined ? parsedData.is_active : true
+                        };
+                      }
+                    } else {
+                      console.log(`Campaign ${i} - Trying generic parsing for Option value`);
+                      const parsedData = parseContractResponse(campaignValue);
+                      if (parsedData && parsedData.creator && parsedData.title) {
+                        campaign = {
+                          id: parsedData.id || BigInt(i),
+                          creator: parsedData.creator,
+                          title: parsedData.title,
+                          description: parsedData.description || '',
+                          image_url: parsedData.image_url || '',
+                          created_at: parsedData.created_at || BigInt(0),
+                          total_donated: parsedData.total_donated || BigInt(0),
+                          is_active: parsedData.is_active !== undefined ? parsedData.is_active : true
+                        };
+                      }
+                    }
+                  }
+                  // Handle None case
+                  else if ((campaignData as any)._arm === 'none') {
+                    console.log(`Campaign ${i} - None format detected, skipping`);
+                    continue;
+                  }
+                  // Try to handle any other format
+                  else {
+                    console.log(`Campaign ${i} - Unknown format, trying fallback parsing`);
+                    const parsedData = parseContractResponse(campaignData);
                     if (parsedData && parsedData.creator && parsedData.title) {
                       campaign = {
                         id: parsedData.id || BigInt(i),
@@ -302,38 +585,190 @@ export default function CampaignsPage() {// Use wallet context
                         image_url: parsedData.image_url || '',
                         created_at: parsedData.created_at || BigInt(0),
                         total_donated: parsedData.total_donated || BigInt(0),
-                        is_active: parsedData.is_active || true
+                        is_active: parsedData.is_active !== undefined ? parsedData.is_active : true
                       };
                     }
-                  } catch (parseError) {
-                    console.error(`Error parsing campaign ${i}:`, parseError);
                   }
-                } else if ('creator' in campaignData && 'title' in campaignData) {
-                  campaign = campaignData as Campaign;
-                }              }              if (campaign) {
-                campaignsArray.push(campaign);
-                loadCampaignBalance(Number(campaign.id));
-                loadCampaignStatus(Number(campaign.id));
-                loadCreatorUsername(campaign.creator);
+                } catch (parseError) {
+                  console.error(`Campaign ${i} - Error parsing normal call:`, parseError);
+                }
               }
+            } catch (sdkError: any) {
+              console.warn(`Campaign ${i} - SDK parsing failed:`, sdkError);
+              
+              // Method 2: Try to extract map data directly from the SDK error
+              if (sdkError?.message && typeof sdkError.message === 'string' && sdkError.message.includes('ScSpecType scSpecTypeOption was not map')) {
+                try {
+                  console.log(`Campaign ${i} - Attempting to extract map data from SDK error`);
+                  
+                  // Try to extract the map data directly from the error object
+                  let mapData = null;
+                  
+                  // Check if the error object contains the actual data we need
+                  if (sdkError && typeof sdkError === 'object') {
+                    // Look for map data in various places in the error object
+                    const findMapData = (obj: any): any => {
+                      if (!obj || typeof obj !== 'object') return null;
+                      
+                      // Check if this object is a map
+                      if (obj._arm === 'map' && obj._value && Array.isArray(obj._value)) {
+                        return obj._value;
+                      }
+                      
+                      // Recursively search in all properties
+                      for (const key in obj) {
+                        if (obj.hasOwnProperty(key)) {
+                          const result = findMapData(obj[key]);
+                          if (result) return result;
+                        }
+                      }
+                      return null;
+                    };
+                    
+                    mapData = findMapData(sdkError);
+                    
+                    if (mapData) {
+                      console.log(`Campaign ${i} - Found map data in error object:`, mapData);
+                      const parsedData = parseMapResponse(mapData);
+                      if (parsedData && parsedData.creator && parsedData.title) {
+                        campaign = {
+                          id: parsedData.id ? BigInt(parsedData.id) : BigInt(i),
+                          creator: parsedData.creator,
+                          title: parsedData.title,
+                          description: parsedData.description || '',
+                          image_url: parsedData.image_url || '',
+                          created_at: parsedData.created_at ? BigInt(parsedData.created_at) : BigInt(0),
+                          total_donated: parsedData.total_donated || BigInt(0),
+                          is_active: parsedData.is_active !== undefined ? parsedData.is_active : true
+                        };
+                        console.log(`Campaign ${i} - Successfully parsed from error object`);
+                      }
+                    }
+                  }
+                  
+                  // If we couldn't extract from error, try simulation as fallback
+                  if (!campaign) {
+                    try {
+                      const simTx = await contract.get_campaign({ campaign_id: BigInt(i) }, { simulate: true });
+                      if (simTx && (simTx as any).simulation) {
+                        console.log(`Campaign ${i} - Got simulation result:`, (simTx as any).simulation);
+                        
+                        // Try to parse the simulation result
+                        const simulation = (simTx as any).simulation;
+                        let simResult = null;
+                        
+                        // Check different possible locations for the result
+                        if (simulation.result && simulation.result.retval) {
+                          simResult = simulation.result.retval;
+                          console.log(`Campaign ${i} - Found retval:`, simResult);
+                        } else if (simulation.result) {
+                          simResult = simulation.result;
+                          console.log(`Campaign ${i} - Found result:`, simResult);
+                        } else if (simulation.transactionData && simulation.transactionData.result) {
+                          simResult = simulation.transactionData.result;
+                          console.log(`Campaign ${i} - Found transactionData result:`, simResult);
+                        }
+                        
+                        if (simResult) {
+                          // Handle different result formats
+                          if (simResult._arm === 'map' && simResult._value && Array.isArray(simResult._value)) {
+                            console.log(`Campaign ${i} - Parsing simulation map data`);
+                            const parsedData = parseMapResponse(simResult._value);
+                            console.log(`Campaign ${i} - Parsed data result:`, parsedData);
+                            if (parsedData && parsedData.creator && parsedData.title) {
+                              campaign = {
+                                id: parsedData.id ? BigInt(parsedData.id) : BigInt(i),
+                                creator: parsedData.creator,
+                                title: parsedData.title,
+                                description: parsedData.description || '',
+                                image_url: parsedData.image_url || '',
+                                created_at: parsedData.created_at ? BigInt(parsedData.created_at) : BigInt(0),
+                                total_donated: parsedData.total_donated || BigInt(0),
+                                is_active: parsedData.is_active !== undefined ? parsedData.is_active : true
+                              };
+                              console.log(`Campaign ${i} - Successfully parsed from simulation`);
+                            } else {
+                              console.log(`Campaign ${i} - Parse failed: creator=${parsedData?.creator}, title=${parsedData?.title}`);
+                            }
+                          } else if (simResult._arm === 'some' && simResult._value && simResult._value._arm === 'map') {
+                            // Handle Option(Some(Map)) format
+                            console.log(`Campaign ${i} - Parsing simulation Option(Some(Map)) data`);
+                            const parsedData = parseMapResponse(simResult._value._value);
+                            console.log(`Campaign ${i} - Parsed data result:`, parsedData);
+                            if (parsedData && parsedData.creator && parsedData.title) {
+                              campaign = {
+                                id: parsedData.id ? BigInt(parsedData.id) : BigInt(i),
+                                creator: parsedData.creator,
+                                title: parsedData.title,
+                                description: parsedData.description || '',
+                                image_url: parsedData.image_url || '',
+                                created_at: parsedData.created_at ? BigInt(parsedData.created_at) : BigInt(0),
+                                total_donated: parsedData.total_donated || BigInt(0),
+                                is_active: parsedData.is_active !== undefined ? parsedData.is_active : true
+                              };
+                              console.log(`Campaign ${i} - Successfully parsed from simulation Option(Some(Map))`);
+                            } else {
+                              console.log(`Campaign ${i} - Parse failed: creator=${parsedData?.creator}, title=${parsedData?.title}`);
+                            }
+                          } else {
+                            console.log(`Campaign ${i} - Unexpected simulation result format:`, simResult);
+                          }
+                        } else {
+                          console.log(`Campaign ${i} - No valid result found in simulation`);
+                        }
+                      }
+                    } catch (simError) {
+                      console.error(`Campaign ${i} - Simulation also failed:`, simError);
+                    }
+                  }
+                } catch (extractionError) {
+                  console.error(`Campaign ${i} - Error extraction failed:`, extractionError);
+                }
+              } else {
+                // Skip this campaign if we can't handle the error
+                continue;
+              }
+            }
+
+            if (campaign) {
+              console.log(`Campaign ${i} successfully parsed:`, campaign);
+              campaignsArray.push(campaign);
+            } else {
+              console.warn(`Campaign ${i} could not be parsed properly`);
             }
           } catch (singleCampaignError) {
             console.error(`Error loading campaign ${i}:`, singleCampaignError);
-          }        }        setCampaigns(campaignsArray.reverse());
-        
-        // Load final amounts from Firebase after campaigns are loaded
-        await loadFinalAmountsFromFirebase(campaignsArray);
-        
-        // Load campaign likes
-        await loadCampaignLikes(campaignsArray);
+            console.log(`Campaign ${i} error details:`, singleCampaignError);
+            // Continue with other campaigns instead of failing completely
+            continue;
+          }
+        }
       }
+
+      console.log(`Total campaigns loaded: ${campaignsArray.length}`);
+      setCampaigns(campaignsArray.reverse());
+      
+      // Load additional data for each campaign
+      for (const campaign of campaignsArray) {
+        loadCampaignBalance(Number(campaign.id));
+        loadCampaignStatus(Number(campaign.id));
+        loadCreatorUsername(campaign.creator);
+      }
+      
+      // Load final amounts from Firebase after campaigns are loaded
+      await loadFinalAmountsFromFirebase(campaignsArray);
+      
+      // Load campaign likes
+      await loadCampaignLikes(campaignsArray);
     } catch (error) {
       console.error('Load campaigns error:', error);
       toast.error('Failed to load campaigns');
     } finally {
       setLoading(prev => ({ ...prev, loadCampaigns: false }));
     }
-  };  // Save campaign's final raised amount before withdrawal
+  };
+
+  // Save campaign's final raised amount before withdrawal
   const saveFinalRaisedAmount = async (campaignId: number) => {
     try {
       if (!contract || !address) return;
