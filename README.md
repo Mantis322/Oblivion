@@ -22,6 +22,8 @@
 
 **Oblivion is a semi-decentralized platform that bridges the gap between traditional web applications and blockchain technology, creating a powerful ecosystem for businesses and creators.**
 
+[Oblivion Quick Walktrough](https://youtu.be/KYtm_NHgGEo)
+
 **Core Benefits:**
 - 🔗 **Forever Posts** - Choose between temporary Web2 posts or permanent blockchain storage on Stellar
 - 💰 **Zero Platform Fees** - Keep 100% of your earnings from courses, campaigns, and content
