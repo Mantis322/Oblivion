@@ -12,7 +12,7 @@
 
 **🌟 One Platform. Infinite Possibilities. Zero Limitations.**
 
-*Social Media • Education • Business Intelligence • Blockchain • AI*
+*A Semi-Decentralized Hub for Creating and Promoting Businesses Using Cryptocurrency and Blockchain Advantages*
 
 ---
 
@@ -20,14 +20,17 @@
 
 ## 🌊 **THE REVOLUTION IS HERE**
 
-**Imagine a world where:**
-- 🔗 **Your content lives forever** - Choose temporary Web2 posts or permanent blockchain storage
-- 💰 **You keep 100% of your earnings** - No 40% commission like Udemy, Coursera, or other platforms
-- 🧠 **AI works for YOU** - Built-in business intelligence to grow your empire
-- 🌍 **You control your data** - Decentralized, censorship-resistant, truly yours
-- 🎯 **Everything in one place** - Social media, education, business tools, payments, campaigns
+**Oblivion is a semi-decentralized platform that bridges the gap between traditional web applications and blockchain technology, creating a powerful ecosystem for businesses and creators.**
 
-**Welcome to OBLIVION** - Where the future of digital interaction begins.
+**Core Benefits:**
+- 🔗 **Forever Posts** - Choose between temporary Web2 posts or permanent blockchain storage on Stellar
+- 💰 **Zero Platform Fees** - Keep 100% of your earnings from courses, campaigns, and content
+- 🤖 **Lucy AI Assistant** - Intelligent QWEN-powered AI that responds to @mentions in comments
+- 🧠 **O.B.I. System** - Complete business intelligence suite for ventures, repositories, and learning paths
+- 🎯 **Unified Platform** - Social media, education, crowdfunding, and business tools in one place
+- 🌍 **True Ownership** - Decentralized options ensure you control your data and content
+
+**Welcome to OBLIVION** - Where Web2 convenience meets Web3 permanence.
 
 ---
 
@@ -59,19 +62,47 @@ We're not just another social media app. We're the **bridge between Web2 conveni
 - 🚀 Campaign performance tracking
 
 ### 🤖 **Lucy - Your Smart AI Assistant**
-**Meet Lucy** - Your intelligent companion that appears when you need help:
-- 💬 **Comment Integration** - Just mention @Lucy in any comment to get instant AI assistance
-- 🧠 **QWEN-Powered** - Advanced AI model for intelligent responses
-- 🎯 **Context-Aware** - Understands your posts and provides relevant insights
+**Meet Lucy** - Your intelligent companion integrated directly into the platform:
+- 💬 **Comment Integration** - Simply type @Lucy in any comment to activate AI assistance
+- 🧠 **QWEN-Powered** - Uses the advanced QWEN-3-30B model for intelligent, context-aware responses
+- 🎯 **Context Understanding** - Lucy reads the original post and comment thread to provide relevant help
+- 🚀 **Instant Responses** - Get AI-powered insights, suggestions, and answers without leaving the platform
+- 📝 **Natural Conversations** - Lucy responds conversationally, making interactions feel natural and helpful
 
-### ⚡ **Multiple Apps in ONE Platform**
+### ⚡ **Core Functionalities Explained**
 
-| What You Get | Traditional Alternative | You Save |
-|-------------|------------------------|----------|
-| 🎯 **Social Media** | Instagram + Twitter | ad fees |
-| 🎓 **Education Platform** | Udemy + Coursera | 40% commission |
-| 💰 **Payment System** | Stripe + PayPal | 3% fees |
-| 🎪 **Crowdfunding** | Kickstarter + GoFundMe | 5-8% fees |
+#### 🔗 **Forever Post Feature**
+Revolutionary dual-storage system giving users complete control:
+- **Web2 Mode**: Traditional posts stored in Firebase (fast, editable, deletable)
+- **Web3 Mode**: Permanent posts stored on Stellar blockchain (immutable, censorship-resistant)
+- **User Choice**: Toggle between storage types when creating posts
+- **No Extra Cost**: Minimal transaction fees for blockchain storage
+- **Verification**: All blockchain posts are verifiable on Stellar network
+
+#### 🧠 **O.B.I. (Oblivion Business Intelligence)**
+Comprehensive business ecosystem for entrepreneurs:
+- **Ventures**: Create and manage business projects with detailed descriptions
+- **Repositories**: Organize digital assets, documents, and resources
+- **Learning Paths**: Build educational journeys with structured content
+- **Assets**: Store and manage business materials within paths
+- **Analytics**: Track engagement and performance metrics
+- **Public/Private**: Control visibility of your business content
+
+#### 🎯 **Campaigns & Crowdfunding**
+Zero-commission fundraising platform:
+- **Create Campaigns**: Set goals, deadlines, and funding targets
+- **Blockchain Verified**: All donations tracked on Stellar network
+- **Instant Withdrawals**: Campaign creators can withdraw funds anytime
+- **Community Support**: Like, share, and promote campaigns
+- **Transparent Tracking**: Real-time funding progress visible to all
+- **No Platform Fees**: 100% of donations go to campaign creators
+
+#### 💬 **Social Features**
+- **Posts & Comments**: Share thoughts, media, and engage with community
+- **Mentions System**: Tag users with @ mentions for notifications
+- **Bookmarks**: Save posts for later reference
+- **Reposts**: Share others' content with your audience
+- **Real-time Messaging**: Private conversations with end-to-end encryption
 
 
 ---
@@ -107,116 +138,283 @@ We're not just another social media app. We're the **bridge between Web2 conveni
 
 ---
 
-## 🚀 **QUICK START GUIDE**
+## 🚀 **GETTING STARTED**
 
 ### 📋 **Prerequisites**
 - Node.js 18+ 
 - npm/yarn/pnpm
-- A vision for the future 🌟
+- Git
+- A Stellar wallet (optional, for blockchain features)
 
-### ⚡ **Lightning Setup**
+### ⚡ **Installation Guide**
 
 ```bash
-# 1️⃣ Clone the revolution
+# 1️⃣ Clone the repository
 git clone https://github.com/Mantis322/Oblivion.git
-cd oblivion
+cd Oblivion
 
-# 2️⃣ Install the future
+# 2️⃣ Install dependencies
 npm install
 
-# 3️⃣ Configure your environment
+# 3️⃣ Set up environment variables
 cp .env.example .env.local
-# Add your API keys (Firebase, QWEN AI, Launchtube)
-
-# 4️⃣ Launch the revolution
-npm run dev
 ```
 
-**🎉 Open [http://localhost:3000](http://localhost:3000) and witness the future!**
+### 🔧 **Environment Configuration**
+
+Create a `.env.local` file with the following:
+
+```env
+# Firebase Configuration
+NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+
+# AI Configuration
+NEXT_PUBLIC_QWEN_API_KEY=your_openrouter_api_key
+
+# Blockchain Configuration
+NEXT_PUBLIC_STELLAR_NETWORK=testnet
+NEXT_PUBLIC_CONTRACT_ID=CCVWHSYCOQ7D2EFFMZNEJJTXLHYYOT7NSVLSOHMLTYIXGDFWJSBHTPIC
+
+# Passkey/Launchtube Configuration (Optional)
+NEXT_PUBLIC_LAUNCHTUBE_URL=https://api.launchtube.com
+```
+
+### 🚀 **Running the Project**
+
+```bash
+# Development mode
+npm run dev
+
+# Production build
+npm run build
+npm run start
+
+# Run tests
+npm run test
+
+# Lint code
+npm run lint
+```
+
+**🎉 Open [http://localhost:3000](http://localhost:3000) and start building the future!**
 
 ---
 
 ## 🌟 **KEY FEATURES THAT WILL BLOW YOUR MIND**
 
-<details>
-<summary>🔥 <strong>Hybrid Web2/Web3 Social Media</strong></summary>
+## 🎯 **DETAILED FEATURE DOCUMENTATION**
 
-- **Smart Choice**: Post normally (Web2) or store forever (Web3)
-- **Stellar Blockchain**: Lightning-fast, eco-friendly permanent storage
-- **No Gas Fees**: Affordable blockchain transactions
-- **Backwards Compatible**: Works for everyone, crypto or not
+<details>
+<summary>🔗 <strong>Forever Post System - Choose Your Storage</strong></summary>
+
+### How It Works
+1. **Create New Post**: Click the post button to open the creation modal
+2. **Choose Storage Type**: 
+   - 📱 **Database (Web2)**: Fast, editable, perfect for regular posts
+   - 🔗 **Oblivion (Web3)**: Permanent blockchain storage on Stellar
+3. **Add Content**: Write your message, add images/videos
+4. **Post**: Your content is stored based on your choice
+
+### Benefits of Forever Posts
+- **Censorship Resistance**: Blockchain posts cannot be deleted by anyone
+- **Historical Record**: Perfect for important announcements, achievements
+- **Ownership Proof**: Cryptographically signed and timestamped
+- **Low Cost**: Stellar's minimal fees make it accessible
+
+### Technical Details
+- Smart Contract: `CCVWHSYCOQ7D2EFFMZNEJJTXLHYYOT7NSVLSOHMLTYIXGDFWJSBHTPIC`
+- Network: Stellar Testnet (Mainnet coming soon)
+- Storage Cost: ~0.00001 XLM per post
 </details>
 
 <details>
-<summary>🎓 <strong>Zero-Commission Education Platform</strong></summary>
+<summary>🤖 <strong>Lucy AI Assistant - Your Intelligent Helper</strong></summary>
 
-- **0% Platform Fees**: Keep every penny you earn
-- **Any Subject**: Yoga, coding, cooking, art, business - everything!
-- **Global Reach**: Built-in payment processing for worldwide sales
+### How to Use Lucy
+1. **In Any Comment**: Type @Lucy followed by your question
+2. **Lucy Responds**: Within seconds, Lucy will reply with helpful information
+3. **Context Aware**: Lucy understands the post and conversation context
+
+### Example Uses
+- `@Lucy what do you think about this idea?`
+- `@Lucy can you help me understand this concept?`
+- `@Lucy summarize the main points here`
+
+### Lucy's Capabilities
+- **General Knowledge**: Answers questions on various topics
+- **Context Analysis**: Understands the post and provides relevant insights
+- **Language Support**: Responds in multiple languages
+- **Friendly Tone**: Maintains helpful, conversational responses
+
+### Technical Implementation
+- Model: QWEN-3-30B via OpenRouter API
+- Response Time: 1-3 seconds average
+- Character Limit: 200 characters for concise responses
 </details>
 
 <details>
-<summary>🧠 <strong>O.B.I. Business Intelligence</strong></summary>
+<summary>🧠 <strong>O.B.I. System - Complete Business Suite</strong></summary>
 
-- **Venture Creation**: Build and manage business projects
-- **Repository System**: Organize your digital assets
-- **Learning Paths**: Create educational journeys
-- **Analytics Dashboard**: Track everything that matters
+### Venture Management
+1. **Create Venture**: Define your business or project
+   - Add description, goals, and branding
+   - Upload venture logo/image
+   - Set public or private visibility
+
+2. **Repository Organization**: 
+   - Create repositories within ventures
+   - Organize different aspects of your business
+   - Perfect for separating products, services, content
+
+3. **Learning Paths**:
+   - Build structured educational content
+   - Create sequential learning experiences
+   - Add multiple assets to each path
+
+4. **Asset Management**:
+   - Upload documents, videos, resources
+   - Organize within paths for easy access
+   - Control access and visibility
+
+### Use Cases
+- **Educators**: Create complete course structures
+- **Businesses**: Organize products and services
+- **Creators**: Build content libraries
+- **Consultants**: Share resources with clients
 </details>
 
 <details>
-<summary>🤖 <strong>Lucy AI Assistant</strong></summary>
+<summary>🎯 <strong>Campaign System - Crowdfunding Made Simple</strong></summary>
 
-- **Comment-Based AI**: Just type @Lucy in any comment to get instant help
-- **QWEN-Powered**: Advanced AI model for intelligent conversations
-- **Context Understanding**: Knows what you're working on and provides relevant assistance
+### Creating a Campaign
+1. **Set Details**: Title, description, funding goal
+2. **Add Media**: Images to showcase your project
+3. **Set Deadline**: Choose campaign duration
+4. **Launch**: Your campaign goes live immediately
+
+### Donation Process
+- **Easy Donations**: One-click donation with connected wallet
+- **Any Amount**: No minimum or maximum limits
+- **Instant Transfer**: Funds available immediately to creator
+- **Transparent**: All transactions visible on blockchain
+
+### Withdrawal Features
+- **No Waiting Period**: Withdraw funds anytime
+- **No Platform Fees**: 100% of donations go to creator
+- **Multiple Withdrawals**: Take out funds as needed
+- **Blockchain Verified**: All transactions recorded on Stellar
+
+### Campaign Analytics
+- Real-time funding progress
+- Donor count and list
+- Social engagement metrics
+- Time remaining countdown
 </details>
 
 <details>
-<summary>💰 <strong>Multiple Revenue Streams</strong></summary>
+<summary>💬 <strong>Social Features - Connect & Engage</strong></summary>
 
-- **Course Sales**: 100% commission-free education
-- **Campaign Funding**: Crowdfunding without platform fees
-- **Content Monetization**: Sell posts, media, and insights
-- **Consultation Services**: Direct creator-to-audience connections
-</details>
+### Posting System
+- **Rich Text**: Format your posts with style
+- **Media Support**: Images, videos, GIFs
+- **Mentions**: Tag users with @username
+- **Privacy Options**: Public or followers-only
 
-<details>
-<summary>🎯 <strong>Advanced Campaign System</strong></summary>
+### Engagement Tools
+- **Likes**: Show appreciation for content
+- **Comments**: Engage in discussions
+- **Reposts**: Share others' content
+- **Bookmarks**: Save posts for later
 
-- **Crowdfunding**: Raise money for projects and causes
-- **Community Building**: Organize supporters around ideas
-- **Impact Tracking**: Measure real-world results
-- **Transparent Funding**: Blockchain-verified transactions
+### Messaging
+- **Private Chats**: One-on-one conversations
+- **Encryption**: Secure message storage
+- **Media Sharing**: Send images in chats
+- **Real-time**: Instant message delivery
 </details>
 
 ---
 
-## 📱 **CORE MODULES**
+## 📖 **USAGE EXAMPLES**
 
-### 🏠 **Social Hub**
-The heart of connection - where ideas meet, communities form, and conversations that matter happen.
+### 🔗 **Creating a Forever Post**
 
-### 🎓 **Education Empire**  
-Your teaching kingdom - create, sell, and scale educational content without platform taxes.
+```javascript
+// User flow for creating a permanent blockchain post
+1. Click "Create Post" button
+2. Write your content
+3. Select "Oblivion" storage type (blockchain icon)
+4. Add media if desired
+5. Click "Post" - your content is now permanent!
+```
 
-### 🧠 **O.B.I. Intelligence**
-Your AI business partner - ventures, analytics, and growth tools that work while you sleep.
+### 🤖 **Using Lucy AI Assistant**
 
-### 🤖 **Lucy AI Assistant**
-Smart comment-based AI helper - mention @Lucy anywhere for instant assistance and insights.
+```
+// In any comment section:
+@Lucy what are the benefits of blockchain storage?
 
-### 🎯 **Campaign Central**
-Crowdfunding and community building - turn ideas into funded realities.
+// Lucy responds:
+"Blockchain storage offers permanence, censorship resistance, and 
+cryptographic proof of ownership. Your content lives forever!"
+```
 
-### 🔗 **Blockchain Bridge**
-Seamless Web3 integration - permanent storage, smart contracts, and true ownership.
+### 🧠 **Creating an O.B.I. Venture**
 
-**🏛️ Smart Contract Details:**
-- **Contract ID**: `CCVWHSYCOQ7D2EFFMZNEJJTXLHYYOT7NSVLSOHMLTYIXGDFWJSBHTPIC`
+```
+1. Navigate to O.B.I. section
+2. Click "Create Venture"
+3. Fill in:
+   - Venture Name: "Yoga Mastery Academy"
+   - Description: Your venture details
+   - Add repositories for different course levels
+   - Create learning paths within each repository
+4. Start adding educational content!
+```
+
+### 🎯 **Launching a Campaign**
+
+```
+1. Go to Campaigns section
+2. Click "Create Campaign"
+3. Set your funding goal and deadline
+4. Share your campaign link
+5. Withdraw funds anytime - no waiting!
+```
+
+---
+
+## 🏗️ **TECHNICAL ARCHITECTURE**
+
+### Frontend Stack
+- **Next.js 15**: React framework with App Router
+- **TypeScript**: Type-safe development
+- **Tailwind CSS**: Utility-first styling
+- **Framer Motion**: Smooth animations
+
+### Backend Services
+- **Firebase**: Authentication, real-time database, storage
+- **Stellar Blockchain**: Smart contracts, permanent storage
+- **QWEN AI**: Natural language processing via OpenRouter
+
+### Key Integrations
+- **Freighter Wallet**: Stellar wallet connection
+- **Passkey/Launchtube**: Passwordless authentication
+- **WebAuthn**: Biometric authentication support
+
+### Smart Contract
+- **Language**: Rust (Soroban SDK)
 - **Network**: Stellar Testnet
-- **Explorer**: [View on Stellar Expert](https://stellar.expert/explorer/testnet/contract/CCVWHSYCOQ7D2EFFMZNEJJTXLHYYOT7NSVLSOHMLTYIXGDFWJSBHTPIC)
-- **Status**: ✅ Live & Active
+- **Functions**: 
+  - `create_post`: Store posts on blockchain
+  - `create_campaign`: Launch fundraising campaigns
+  - `donate`: Process campaign donations
+  - `withdraw`: Creator fund withdrawals
 
 ---
 
@@ -265,43 +463,165 @@ oblivion/
 
 ---
 
-## 🤝 **CONTRIBUTING TO THE REVOLUTION**
+## 🛠️ **DEVELOPMENT GUIDE**
 
-We welcome builders, dreamers, and revolutionaries! 
+### 📁 **Project Structure**
 
-### 🛠️ **How to Contribute:**
+```
+oblivion/
+├── src/app/                    # Next.js App Router
+│   ├── components/            # Reusable UI components
+│   │   ├── PostComponent.tsx  # Post display with Lucy AI
+│   │   ├── input.tsx         # Post creation with storage options
+│   │   └── sidebar.tsx       # Navigation
+│   ├── services/             # Business logic
+│   │   ├── aiService.ts      # Lucy AI integration
+│   │   ├── obiService.ts     # O.B.I. functionality
+│   │   └── postService.ts    # Post management
+│   ├── contexts/             # React contexts
+│   ├── (routes)/             # Page components
+│   └── types/                # TypeScript definitions
+├── packages/oblivion/        # Smart contract interface
+├── public/                   # Static assets
+└── firebase.tsx             # Firebase configuration
+```
 
-1. **🍴 Fork the repo**
-2. **🌿 Create a feature branch**: `git checkout -b feature/amazing-feature`
-3. **💻 Code your magic**: Follow our style guide
-4. **✅ Test thoroughly**: Make sure nothing breaks
-5. **📝 Commit with style**: `git commit -m "Add amazing feature"`
-6. **🚀 Push to branch**: `git push origin feature/amazing-feature`
-7. **🎯 Open a Pull Request**: Describe your contribution
+### 🔧 **Key Components**
 
-### 📋 **Development Guidelines:**
-- Write clean, commented code
-- Follow TypeScript best practices  
-- Test on multiple devices/browsers
-- Update documentation as needed
-- Keep the vision alive! 🌟
+#### Forever Post Implementation
+```typescript
+// In components/input.tsx
+const [storageType, setStorageType] = useState<'database' | 'oblivion'>('database');
+
+// User selects storage type
+// If 'oblivion' selected, post is sent to blockchain
+// All posts are also stored in Firebase for fast retrieval
+```
+
+#### Lucy AI Integration
+```typescript
+// In services/aiService.ts
+export async function generateLucyResponse(
+  postContent: string,
+  userComment: string,
+  postAuthor: string,
+  commenterUsername: string
+): Promise<LucyResponse>
+```
+
+#### Campaign Smart Contract
+```typescript
+// Campaign operations
+contract.create_campaign({ /* params */ })
+contract.donate({ campaign_id, amount })
+contract.withdraw({ campaign_id })
+```
+
+### 🧪 **Testing**
+
+```bash
+# Run unit tests
+npm run test
+
+# Run integration tests
+npm run test:integration
+
+# Test blockchain features
+npm run test:stellar
+```
+
+### 🚀 **Deployment**
+
+1. **Vercel Deployment** (Recommended)
+   ```bash
+   vercel --prod
+   ```
+
+2. **Docker Deployment**
+   ```bash
+   docker build -t oblivion .
+   docker run -p 3000:3000 oblivion
+   ```
+
+3. **Traditional Hosting**
+   ```bash
+   npm run build
+   npm run start
+   ```
 
 
-</div>
+## 🤝 **CONTRIBUTING**
+
+We welcome contributions from builders, dreamers, and revolutionaries!
+
+### 🛠️ **How to Contribute**
+
+1. **Fork the repository**
+2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
+3. **Make your changes**: Follow our coding standards
+4. **Test thoroughly**: Ensure all tests pass
+5. **Commit your changes**: `git commit -m "Add amazing feature"`
+6. **Push to branch**: `git push origin feature/amazing-feature`
+7. **Open a Pull Request**: Describe your changes clearly
+
+### 📋 **Contribution Guidelines**
+
+- **Code Style**: Follow TypeScript/React best practices
+- **Testing**: Add tests for new features
+- **Documentation**: Update README for significant changes
+- **Commits**: Use clear, descriptive commit messages
+- **Reviews**: Be open to feedback and suggestions
+
+### 🐛 **Reporting Issues**
+
+1. Check existing issues first
+2. Use issue templates
+3. Provide clear reproduction steps
+4. Include system information
+5. Add screenshots if applicable
 
 ---
 
+## 📚 **ADDITIONAL RESOURCES**
+
+### 📖 **Documentation**
+- [Stellar Documentation](https://developers.stellar.org/)
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Firebase Documentation](https://firebase.google.com/docs)
+- [QWEN AI Documentation](https://github.com/QwenLM/Qwen)
+
+### 🔗 **Useful Links**
+- [Stellar Laboratory](https://laboratory.stellar.org/)
+- [Contract Explorer](https://stellar.expert/explorer/testnet)
+- [Freighter Wallet](https://www.freighter.app/)
+
+### 💬 **Community**
+- [Discord Server](#) (Coming Soon)
+- [Twitter/X](#) (Coming Soon)
+- [Telegram](#) (Coming Soon)
+
+---
+
+## 📄 **LICENSE**
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
 
 <div align="center">
 
-## 🚀 **THE FUTURE STARTS HERE**
+## 🚀 **THE FUTURE IS DECENTRALIZED**
 
-### *"While others talk about the future, we're building it."*
+### *"Oblivion: Where Web2 Convenience Meets Web3 Freedom"*
 
-**Ready to be part of the revolution?**
+**Join us in building the future of social commerce and decentralized business.**
+
+[![Star on GitHub](https://img.shields.io/github/stars/Mantis322/Oblivion.svg?style=social)](https://github.com/Mantis322/Oblivion)
 
 ---
 
 **🌟 One Platform. Infinite Possibilities. Zero Limitations. 🌟**
+
+*Built with ❤️ by the Oblivion Team*
 
 </div>
