@@ -124,32 +124,58 @@ export async function parseTextWithMentions(text: string): Promise<ParsedMention
 
       // Try to find user by username
       const username = match[1].toLowerCase();
-      try {
-        const usersRef = collection(db, "users");
-        const q = query(usersRef, where("username", "==", username));
-        const querySnapshot = await getDocs(q);
-        
-        if (!querySnapshot.empty) {
-          const userData = querySnapshot.docs[0].data();
-          parts.push({
-            type: 'mention',
-            content: `@${match[1]}`,
-            username: userData.username,
-            walletAddress: userData.walletAddress
-          });
-        } else {
-          // Username not found, treat as regular text
+      const originalCase = match[1]; // Orijinal case'i sakla
+      
+      // Special case for Lucy AI assistant (case-insensitive)
+      if (username === 'lucy') {
+        parts.push({
+          type: 'mention',
+          content: `@${originalCase}`,
+          username: 'lucy',
+          walletAddress: 'lucy-ai-assistant'
+        });
+      } else {
+        try {
+          const usersRef = collection(db, "users");
+          
+          // Önce usernameLower field ile arama yapalım (yeni sistem)
+          let q = query(usersRef, where("usernameLower", "==", username));
+          let querySnapshot = await getDocs(q);
+          
+          // Eğer usernameLower field yoksa (eski kullanıcılar), username field ile deneyelim
+          if (querySnapshot.empty) {
+            q = query(usersRef, where("username", "==", originalCase));
+            querySnapshot = await getDocs(q);
+          }
+          
+          // Hala bulunamazsa lowercase ile deneyelim
+          if (querySnapshot.empty) {
+            q = query(usersRef, where("username", "==", username));
+            querySnapshot = await getDocs(q);
+          }
+          
+          if (!querySnapshot.empty) {
+            const userData = querySnapshot.docs[0].data();
+            parts.push({
+              type: 'mention',
+              content: `@${originalCase}`,
+              username: userData.username,
+              walletAddress: userData.walletAddress
+            });
+          } else {
+            // Username not found, treat as regular text
+            parts.push({
+              type: 'text',
+              content: match[0]
+            });
+          }
+        } catch (error) {
+          // Error finding user, treat as regular text
           parts.push({
             type: 'text',
             content: match[0]
           });
         }
-      } catch (error) {
-        // Error finding user, treat as regular text
-        parts.push({
-          type: 'text',
-          content: match[0]
-        });
       }
 
       lastIndex = match.index + match[0].length;

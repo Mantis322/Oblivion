@@ -19,6 +19,7 @@ export interface UserData {
   walletAddress: string;
   name?: string;
   username?: string;
+  usernameLower?: string; // Lowercase version for case-insensitive search
   avatar?: string;
   bio?: string;
   following?: string[];
@@ -65,6 +66,7 @@ export const createUser = async (userData: Partial<UserData>): Promise<boolean> 
       walletAddress: userData.walletAddress,
       name: userData.name || "",
       username: userData.username || "",
+      usernameLower: userData.username ? userData.username.toLowerCase() : "",
       avatar: userData.avatar || "",
       bio: userData.bio || "",
       following: [],
@@ -85,10 +87,15 @@ export const createUser = async (userData: Partial<UserData>): Promise<boolean> 
 // Kullanıcı bilgilerini güncelle
 export const updateUser = async (walletAddress: string, userData: Partial<UserData>): Promise<boolean> => {
   try {
-    const updateData = {
+    const updateData: any = {
       ...userData,
       updatedAt: new Date()
     };
+    
+    // Eğer username güncelleniyorsa, usernameLower'ı da güncelle
+    if (userData.username) {
+      updateData.usernameLower = userData.username.toLowerCase();
+    }
     
     await updateDoc(doc(db, "users", walletAddress), updateData);
     return true;

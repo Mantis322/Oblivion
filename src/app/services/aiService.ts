@@ -38,7 +38,9 @@ Context:
 - Original post by @${postAuthor}: "${postContent}"
 - Comment by @${commenterUsername}: "${userComment}"
 
-Please respond as Lucy in a conversational, friendly tone. Keep your response under 200 characters (since you'll be replying to @${commenterUsername}). Be helpful and engaging, but concise. Don't mention that you're an AI unless directly asked. Do not include the @username at the beginning of your response as it will be added automatically.`;
+Please respond as Lucy in a conversational, friendly tone. Keep your response under 180 characters (since you'll be replying to @${commenterUsername}). Be helpful and engaging, but concise. Don't mention that you're an AI unless directly asked. 
+
+IMPORTANT: Do NOT include @${commenterUsername} at the beginning of your response as it will be added automatically when the comment is posted.`;
 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",

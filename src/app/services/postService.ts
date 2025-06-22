@@ -173,9 +173,12 @@ export const getCommentsByPostId = async (postId: string): Promise<CommentData[]
       comments.push({
         id: doc.id,
         ...data,
-        timestamp: {
+        timestamp: data.timestamp ? {
           seconds: data.timestamp.seconds,
           nanoseconds: data.timestamp.nanoseconds
+        } : {
+          seconds: Math.floor(Date.now() / 1000),
+          nanoseconds: 0
         }
       } as CommentData);
     });

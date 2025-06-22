@@ -40,7 +40,7 @@ export default function MentionText({ text, className = '' }: MentionTextProps) 
   }
 
   return (
-    <span className={className}>
+    <span className={`${className} relative`}>
       {parsedContent.map((part, index) => {
         if (part.type === 'mention' && part.username && part.walletAddress) {
           return (
@@ -48,13 +48,13 @@ export default function MentionText({ text, className = '' }: MentionTextProps) 
               key={index}
               username={part.username}
               walletAddress={part.walletAddress}
-              className="text-blue-400 hover:text-blue-300 transition-colors duration-200"
+              className="text-blue-400 hover:text-blue-300 font-semibold relative z-10 cursor-pointer"
               showAt={true}
             />
           );
         } else {
           return (
-            <span key={index}>
+            <span key={index} className="inline">
               {part.content}
             </span>
           );

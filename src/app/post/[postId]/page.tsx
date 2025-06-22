@@ -445,7 +445,7 @@ export default function PostDetailPage() {
             );
 
             if (lucyResponse.success && lucyResponse.content) {
-              // Add Lucy's response as a comment
+              // Add Lucy's response as a comment with automatic mention
               const lucyCommentData = {
                 postId: postId,
                 userId: 'lucy-ai-assistant',
@@ -485,19 +485,33 @@ export default function PostDetailPage() {
   const formatTimestamp = (timestamp: any) => {
     if (!timestamp) return '';
     
-    // Handle Firebase timestamp format
-    const date = timestamp.seconds ? new Date(timestamp.seconds * 1000) : new Date(timestamp);
-    const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
-    if (diffInHours < 1) {
-      const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-      return `${diffInMinutes}m`;
-    } else if (diffInHours < 24) {
-      return `${diffInHours}h`;
-    } else {
-      const diffInDays = Math.floor(diffInHours / 24);
-      return `${diffInDays}d`;
+    try {
+      // Handle Firebase timestamp format
+      const date = timestamp.seconds ? new Date(timestamp.seconds * 1000) : new Date(timestamp);
+      const now = new Date();
+      const diffInMilliseconds = now.getTime() - date.getTime();
+      
+      // If the difference is negative (future date), it means timestamp is not yet set
+      if (diffInMilliseconds < 0) {
+        return 'now';
+      }
+      
+      const diffInMinutes = Math.floor(diffInMilliseconds / (1000 * 60));
+      const diffInHours = Math.floor(diffInMilliseconds / (1000 * 60 * 60));
+      
+      if (diffInMinutes < 1) {
+        return 'now';
+      } else if (diffInMinutes < 60) {
+        return `${diffInMinutes}m`;
+      } else if (diffInHours < 24) {
+        return `${diffInHours}h`;
+      } else {
+        const diffInDays = Math.floor(diffInHours / 24);
+        return `${diffInDays}d`;
+      }
+    } catch (error) {
+      console.error('Error formatting timestamp:', error);
+      return 'now';
     }
   };  if (loading) {
     return (
@@ -565,7 +579,7 @@ export default function PostDetailPage() {
                   </div>
                   <MentionText 
                     text={post.text}
-                    className="text-lg leading-relaxed text-slate-100 mb-4"
+                    className="text-lg leading-relaxed text-slate-100 mb-4 relative z-0"
                   />                  {post.image && (
                     <div 
                       className="mb-4 rounded-xl overflow-hidden border border-slate-600/30 cursor-pointer hover:border-slate-500/50 transition-colors duration-200"
@@ -760,6 +774,7 @@ export default function PostDetailPage() {
                   {comments.map((comment) => (                    <div 
                       key={comment.id} 
                       className="bg-slate-800/20 border border-slate-700/30 rounded-xl p-5 hover:bg-slate-800/30 transition-colors duration-200"
+                      style={{ pointerEvents: 'auto' }}
                     >
                       <div className="flex space-x-3">
                         <div className="w-10 h-10 bg-slate-700 rounded-full flex-shrink-0 overflow-hidden">
@@ -808,7 +823,7 @@ export default function PostDetailPage() {
                           {comment.text && (
                             <MentionText 
                               text={comment.text}
-                              className="text-slate-100 leading-relaxed text-sm mb-2"
+                              className="text-slate-100 leading-relaxed text-sm mb-2 relative z-0"
                             />
                           )}
                             {/* Comment Media */}
