@@ -1216,7 +1216,7 @@ export default function About() {
                       <p className="text-white/60 text-sm">Kickstarter</p>
                     </div>
                     <div className="text-center">
-                      <div className="text-3xl font-bold text-red-400 mb-2">2.9%+</div>
+                      <div className="text-3xl font-bold text-red-400 mb-2">3%+</div>
                       <p className="text-white/60 text-sm">GoFundMe</p>
                     </div>
                     <div className="text-center">
@@ -1224,7 +1224,7 @@ export default function About() {
                       <p className="text-white/60 text-sm">Indiegogo</p>
                     </div>
                     <div className="text-center">
-                      <div className="text-3xl font-bold text-green-400 mb-2">0%</div>
+                      <div className="text-3xl font-bold text-green-400 mb-2">3%</div>
                       <p className="text-white/60 text-sm font-semibold">Oblivion</p>
                     </div>
                   </div>
