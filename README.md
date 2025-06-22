@@ -118,7 +118,7 @@ We're not just another social media app. We're the **bridge between Web2 conveni
 
 ```bash
 # 1️⃣ Clone the revolution
-git clone https://github.com/your-username/oblivion.git
+git clone https://github.com/Mantis322/Oblivion.git
 cd oblivion
 
 # 2️⃣ Install the future
