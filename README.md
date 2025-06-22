@@ -68,7 +68,7 @@ We're not just another social media app. We're the **bridge between Web2 conveni
 
 | What You Get | Traditional Alternative | You Save |
 |-------------|------------------------|----------|
-| 🎯 **Social Media** | Instagram + Twitter | $0/month |
+| 🎯 **Social Media** | Instagram + Twitter | ad fees |
 | 🎓 **Education Platform** | Udemy + Coursera | 40% commission |
 | 💰 **Payment System** | Stripe + PayPal | 3% fees |
 | 🎪 **Crowdfunding** | Kickstarter + GoFundMe | 5-8% fees |
