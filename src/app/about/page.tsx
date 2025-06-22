@@ -1240,7 +1240,7 @@ export default function About() {
                     <ul className="space-y-2 text-white/70">
                       <li className="flex items-start">
                         <span className="mr-2 text-green-400">✓</span>
-                        <span>Keep 100% of all donations</span>
+                        <span>Keep 97% of all donations</span>
                       </li>
                       <li className="flex items-start">
                         <span className="mr-2 text-green-400">✓</span>
@@ -1265,7 +1265,7 @@ export default function About() {
                     <ul className="space-y-2 text-white/70">
                       <li className="flex items-start">
                         <span className="mr-2 text-blue-400">✓</span>
-                        <span>100% goes to the creator</span>
+                        <span>97% goes to the creator</span>
                       </li>
                       <li className="flex items-start">
                         <span className="mr-2 text-blue-400">✓</span>
@@ -1280,47 +1280,6 @@ export default function About() {
                         <span>Direct creator connection</span>
                       </li>
                     </ul>
-                  </motion.div>
-                </div>
-              </motion.div>
-
-              {/* Success Stories */}
-              <motion.div
-                className="mb-12"
-                initial={{ y: 30, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.8, delay: 0.8 }}
-              >
-                <h3 className="text-2xl font-bold text-white mb-6 text-center">Campaign Success Stories</h3>
-                <div className="grid md:grid-cols-3 gap-6">
-                  <motion.div
-                    className="bg-gradient-to-br from-orange-500/10 to-red-500/10 backdrop-blur-xl rounded-2xl p-6 border border-orange-400/20"
-                    whileHover={{ scale: 1.02 }}
-                  >
-                    <div className="text-4xl mb-3">🎮</div>
-                    <h4 className="text-lg font-semibold text-white mb-2">Indie Game Studio</h4>
-                    <p className="text-white/70 text-sm mb-3">Raised $150,000 for their new game</p>
-                    <p className="text-green-400 font-semibold">Saved: $12,000 in fees</p>
-                  </motion.div>
-
-                  <motion.div
-                    className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 backdrop-blur-xl rounded-2xl p-6 border border-blue-400/20"
-                    whileHover={{ scale: 1.02 }}
-                  >
-                    <div className="text-4xl mb-3">🏥</div>
-                    <h4 className="text-lg font-semibold text-white mb-2">Medical Research</h4>
-                    <p className="text-white/70 text-sm mb-3">Funded COVID-19 research project</p>
-                    <p className="text-green-400 font-semibold">Saved: $8,000 in fees</p>
-                  </motion.div>
-
-                  <motion.div
-                    className="bg-gradient-to-br from-green-500/10 to-blue-500/10 backdrop-blur-xl rounded-2xl p-6 border border-green-400/20"
-                    whileHover={{ scale: 1.02 }}
-                  >
-                    <div className="text-4xl mb-3">🌱</div>
-                    <h4 className="text-lg font-semibold text-white mb-2">Eco Startup</h4>
-                    <p className="text-white/70 text-sm mb-3">Launched sustainable product line</p>
-                    <p className="text-green-400 font-semibold">Saved: $5,000 in fees</p>
                   </motion.div>
                 </div>
               </motion.div>
