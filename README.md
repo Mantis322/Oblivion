@@ -212,6 +212,12 @@ Crowdfunding and community building - turn ideas into funded realities.
 ### 🔗 **Blockchain Bridge**
 Seamless Web3 integration - permanent storage, smart contracts, and true ownership.
 
+**🏛️ Smart Contract Details:**
+- **Contract ID**: `CCVWHSYCOQ7D2EFFMZNEJJTXLHYYOT7NSVLSOHMLTYIXGDFWJSBHTPIC`
+- **Network**: Stellar Testnet
+- **Explorer**: [View on Stellar Expert](https://stellar.expert/explorer/testnet/contract/CCVWHSYCOQ7D2EFFMZNEJJTXLHYYOT7NSVLSOHMLTYIXGDFWJSBHTPIC)
+- **Status**: ✅ Live & Active
+
 ---
 
 ## 🎯 **TARGET AUDIENCE**
